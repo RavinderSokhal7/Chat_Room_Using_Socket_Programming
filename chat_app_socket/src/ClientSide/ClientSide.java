@@ -21,6 +21,7 @@ public class ClientSide {
     private Socket soc;
     private String server;
     private final String username;
+    private String Uid;
     private ObjectInputStream InFromServer;
     private ObjectOutputStream  OutToServer;
 //    private DataOutputStream FOutToServer;
@@ -50,6 +51,12 @@ public class ClientSide {
             
             System.out.println("Created ...");
             OutToServer.writeObject(username);
+            try {
+                Uid = (String) InFromServer.readObject();//
+                
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ClientSide.class.getName()).log(Level.SEVERE, null, ex);
+            }
             new ListenFromServer().start();
         } catch (IOException ex) {
             Logger.getLogger(ClientSide.class.getName()).log(Level.SEVERE, null, ex);
@@ -86,6 +93,9 @@ public class ClientSide {
     
     public void sendMsg(String msg){
         try {
+            if(!msg.equalsIgnoreCase("Disconnect") && !(msg.equalsIgnoreCase("Who is online?"))){
+                msg = Uid + " :" +msg;
+            }
             this.OutToServer.writeObject(msg);
             System.out.println("Msg sent ...");
         } catch (IOException ex) {
