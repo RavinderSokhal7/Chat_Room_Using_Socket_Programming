@@ -23,6 +23,7 @@ public class ServerSide {
     ObjectInputStream InFromClient;
     ObjectOutputStream OutFromServer;
     private GUIServer guiS;
+    static int uniqueId = 0;
     
     ServerSide(int port, GUIServer guis){
         this.port = port;
@@ -73,6 +74,7 @@ public class ServerSide {
                 Logger.getLogger(ServerSide.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        DisplayMsgOnGui("Server Stopped!\n");
         try {
             ssoc.close();
         } catch (IOException ex) {
@@ -83,26 +85,28 @@ public class ServerSide {
     public String whoisonline(){
         String s = "Online Users:\n";
 //        for( ClientThread x : clist){
-//            s += x.username + "\n";
+//            s += x.Uid + "\n";
 //        }
-        s = clist.stream().map((x) -> x.username + "\n").reduce(s, String::concat);// Same as above for loop
+        s = clist.stream().map((x) -> x.Uid + "\n").reduce(s, String::concat);// Same as above for loop
         return s;
     }
     
     class ClientThread extends Thread {
         // the socket where to listen/talk
-
+        
+        int id;
         Socket socket;
         ObjectInputStream sInput;
         ObjectOutputStream sOutput;
         String username;
         String date;
         boolean keepGoing = true;
+        String Uid;
 
         // Constructore
         ClientThread(Socket socket) {
             // a unique id
-            //id = ++uniqueId;
+            id = ++uniqueId;
             this.socket = socket;
             /* Creating both Data Stream */
             System.out.println("Thread trying to create Object Input/Output Streams");
@@ -117,7 +121,10 @@ public class ServerSide {
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(ServerSide.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                Uid = id +"."+ username;// Unique Id + username, for username can be same
                 DisplayMsgOnGui(username + " just connected.");
+                
+                sOutput.writeObject((Object)Uid);// Sent to client to set its UID
             }catch (IOException e) {
 //                display("Exception creating new Input/output Streams: " + e);
                 return;
@@ -146,6 +153,9 @@ public class ServerSide {
                         if(cm.equals("Who is online?")){
                             String s = whoisonline();
                             sOutput.writeObject(s);
+                        }
+                        else if(cm.equalsIgnoreCase("Disconnect")){
+                            this.ClientDisconnected(this.Uid);
                         }
                         else
                         writeMsg(cm);
@@ -187,6 +197,8 @@ public class ServerSide {
             } catch (Exception e) {
             }
             this.keepGoing = false;
+            DisplayMsgOnGui(Uid+" Disconnected!");
+            this.destroy();
         }
 
         /*
@@ -214,6 +226,15 @@ public class ServerSide {
 //            DisplayMsgOnGui(f);
 //            broadcast(f);
             return true;
+        }
+
+        private void ClientDisconnected(String uid) {
+            clist.forEach((ClientThread x) -> {
+            if(x.Uid.equals(uid)){
+                clist.remove(x);
+                x.close();
+            }
+        });
         }
         
     }
