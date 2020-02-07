@@ -1,6 +1,8 @@
 # Chat_Room_Using_Socket_Programming
 This is an app made using java netbeans, is a Chatroom app.
+
 It works on TCP Sockets.
+
 To create a server :
 * run chat_room_Server.exe on windows
   OR
