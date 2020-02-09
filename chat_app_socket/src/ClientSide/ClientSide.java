@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import Main.PrivateMsg;
 
 public class ClientSide {
     private int port = 5555;
@@ -37,7 +38,42 @@ public class ClientSide {
     }
     
     
-    public String getUsername(){
+    
+    public Socket getSoc() {
+		return soc;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+
+
+	public void setServer(String server) {
+		this.server = server;
+	}
+
+
+
+	public void setInFromServer(ObjectInputStream inFromServer) {
+		InFromServer = inFromServer;
+	}
+
+
+
+	public void setOutToServer(ObjectOutputStream outToServer) {
+		OutToServer = outToServer;
+	}
+
+
+
+	public void setKeepGoing(boolean keepGoing) {
+		this.keepGoing = keepGoing;
+	}
+
+
+
+	public String getUsername(){
         return this.username;
     }
     
@@ -49,22 +85,27 @@ public class ClientSide {
             OutToServer = new ObjectOutputStream(soc.getOutputStream());
             InFromServer = new ObjectInputStream(soc.getInputStream());
             
-            System.out.println("Created ...");
+            System.out.println("Streams Created ...");
+//            send username to server
             OutToServer.writeObject(username);
             try {
+//            	Get Uid from server
                 Uid = (String) InFromServer.readObject();//
                 
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(ClientSide.class.getName()).log(Level.SEVERE, null, ex);
+                guiC.displayMsg(ex.toString());
             }
+//            Start the client listening Thread
             new ListenFromServer().start();
         } catch (IOException ex) {
             Logger.getLogger(ClientSide.class.getName()).log(Level.SEVERE, null, ex);
-            guiC.displayMsg(ex.toString());
+            guiC.displayMsg(ex.toString() + "\n Server not online!");
             System.out.println(ex.toString());
         }
     }
     
+//    Close Streams and the Socket
     public void close(){
         if(OutToServer != null){
             try {
@@ -93,8 +134,8 @@ public class ClientSide {
     
     public void sendMsg(String msg){
         try {
-            if(!msg.equalsIgnoreCase("Disconnect") && !(msg.equalsIgnoreCase("Who is online?"))){
-                msg = Uid + " :" +msg;
+            if(!msg.equals("Disconnect") && !(msg.equals("Who is online?"))){
+                msg = Uid + " "+username+" :" +msg;
             }
             this.OutToServer.writeObject(msg);
             System.out.println("Msg sent ...");
@@ -102,6 +143,18 @@ public class ClientSide {
             Logger.getLogger(ClientSide.class.getName()).log(Level.SEVERE, null, ex);
             guiC.setText(ex.toString());
         }
+    }
+    
+    public void sendPrivateMsg(PrivateMsg pmsg) {
+    	pmsg.setMsg(Uid + " "+username+" :" + pmsg.getMsg());
+    	pmsg.setSenderUidUsername(Uid + " "+username);
+    	try {
+			this.OutToServer.writeObject(pmsg);
+		} catch (IOException e) {
+			e.printStackTrace();
+			guiC.setText(e.toString());
+		}
+        System.out.println("Msg sent ...");
     }
     
     public void sendFile(File f){
@@ -140,24 +193,27 @@ public class ClientSide {
         public void run() {
             while (keepGoing) {
                 try {
-                    String msg = (String) InFromServer.readObject();
+                    Object msg = InFromServer.readObject();
                     // if console mode print the message and add back the prompt
-                    if (guiC == null) {
-                        System.out.println(msg);
-                        System.out.print("> ");
-                    } else if(msg.equals("Server Stopped!\n")){
-                        String s = guiC.getText();
-                        guiC.Disconnect();
-                        guiC.setText(s+"\n"+"Server Stopped!");
-                    }                    
-                    else{
-                        guiC.displayMsg(msg);
+                    if(msg instanceof String) {
+                    	if (guiC == null) {
+                            System.out.println((String)msg);
+                            System.out.print("> ");
+                        } else if(msg.equals("Server Stopped!\n")){
+                            String s = guiC.getText();
+                            guiC.Disconnect();
+                            guiC.setText(s+"\n"+"Server Stopped!");
+                        }                    
+                        else{
+                            guiC.displayMsg((String)msg);
+                        }
+                    }
+                    else if(msg instanceof PrivateMsg) {
+                    	PrivateMsg pmsg = (PrivateMsg) msg;
+                    	guiC.displayPrivateMsg(pmsg);
                     }
                 } catch (IOException e) {
-//                    display("Server has close the connection: " + e);
-//                    if (guiC != null) {
-//                        guiC.connectionFailed();
-//                    }
+                	guiC.displayMsg(e.toString());
                     break;
                 } // can't happen with a String object but need the catch anyhow
                 catch (ClassNotFoundException e2) {
