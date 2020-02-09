@@ -130,6 +130,7 @@ public class LoginScreen extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+//    Login Button Pressed
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         String u = jTextField1.getText();
@@ -141,16 +142,17 @@ public class LoginScreen extends javax.swing.JFrame {
 
     private void jButton1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jButton1KeyPressed
         // TODO add your handling code here:
-        String u = jTextField1.getText();
+        String u = jTextField1.getText().trim();
         if(u != null){
             new GUIClient("localhost", 5555, u).setVisible(true);
             this.dispose();
         }
     }//GEN-LAST:event_jButton1KeyPressed
 
+//    Login
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
-        String u = jTextField1.getText();
+        String u = jTextField1.getText().trim();
         if(u != null){
             new GUIClient("localhost", 5555, u).setVisible(true);
             this.dispose();
