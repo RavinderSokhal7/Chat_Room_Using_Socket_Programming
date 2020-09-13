@@ -21,3 +21,15 @@ To be a client :
 
 For Private Chat:
 * Enter IP and username of reciever to send private msg.
+
+
+## UI
+![Alt text](/screenshots/0.JPG?raw=true "Server")
+
+![Alt text](/screenshots/1.JPG?raw=true "Client")
+
+![Alt text](/screenshots/3.JPG?raw=true "Client 1")
+
+![Alt text](/screenshots/4.JPG?raw=true "Client 2")
+
+![Alt text](/screenshots/5.JPG?raw=true "Server Side Chat Room")
