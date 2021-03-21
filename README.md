@@ -5,14 +5,14 @@ It works on TCP Sockets.
 
 To create a server :
 * run Server.exe on windows
-  OR
+* OR
 * type "java -jar Server.jar" on terminal
 * Enter your preffered port no and then click "Start".
 * For closing the connection click "Stop".
 
 To be a client :
 * run Client.exe on windows
-  OR
+* OR
 * type "java -jar Client.jar" on terminal
 * Enter username and enter the chat room.
 * Enter the server ip and port then click "Connect"
